@@ -1,15 +1,13 @@
-# OBI SPI Slave
+# APB SPI Slave 
+
+[!! WORK IN PROGRESS !!]
 
 This is an implementation of a simple SPI slave. 
 An external microcontroller can use the SPI slave to access the memory of the SoC where this IP is
-instantiated. The SPI slave uses the OBI bus to access the memory of the target
+instantiated. The SPI slave uses the APB bus to access the memory of the target
 SoC.
 
 It contains dual-clock FIFOs to perform the clock domain crossing from SPI to
-the SoC (OBI) domain.
+the SoC (APB) domain.
 
-This IP depends on some PULP common cells like clock muxes, clock gates and
-clock inverters. Those can be found in the PULP common cells repository or in
-the PULPino RTL sources. The clock domain crossing functionality is reused from
-the AXI slice DC component, so make sure you compile the AXI slice DC when
-using this IP.
+This is a fork of [obi_spi_slave](https://github.com/esl-epfl/obi_spi_slave)
