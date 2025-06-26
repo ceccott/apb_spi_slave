@@ -60,17 +60,15 @@ module spi_slave_tx (
     end
   end
 
-  pulp_clock_inverter clk_inv_i (
-      .clk_i(sclk),
-      .clk_o(sclk_inv)
-  );
+  assign sclk_inv = ~sclk;
 
-  pulp_clock_mux2 clk_mux_i (
-      .clk0_i(sclk_inv),
-      .clk1_i(sclk),
-      .clk_sel_i(test_mode),
-      .clk_o(sclk_test)
-  );
+  always_comb
+  begin
+    if (test_mode == 1'b0)
+      sclk_test = sclk_inv;
+    else
+      sclk_test = sclk;
+  end
 
   always @(posedge sclk_test or posedge cs) begin
     if (cs == 1'b1) begin
