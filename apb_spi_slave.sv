@@ -1,17 +1,6 @@
-// Copyright 2017 ETH Zurich and University of Bologna.
-// Copyright and related rights are licensed under the Solderpad Hardware
-// License, Version 0.51 (the “License”); you may not use this file except in
-// compliance with the License.  You may obtain a copy of the License at
-// http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law
-// or agreed to in writing, software, hardware and materials distributed under
-// this License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR
-// CONDITIONS OF ANY KIND, either express or implied. See the License for the
-// specific language governing permissions and limitations under the License.
-
-module obi_spi_slave #(
-
-    parameter OBI_ADDR_WIDTH = 32,
-    parameter OBI_DATA_WIDTH = 32
+module apb_spi_slave #(
+    parameter APB_ADDR_WIDTH = 32,
+    parameter APB_DATA_WIDTH = 32
 ) (
     //input  logic test_mode,
     input  logic spi_sclk_i,
@@ -19,25 +8,21 @@ module obi_spi_slave #(
     input  logic spi_mosi_i,
     output logic spi_miso_o,
 
-    // OBI MASTER
+    // APB MASTER
     //***************************************
-    input logic obi_clk_i,
-    input logic obi_rstn_i,
+    input logic apb_pclk_i,
+    input logic apb_preset_ni,
 
-    // ADDRESS CHANNEL
-    output logic                      obi_master_req_o,
-    input  logic                      obi_master_gnt_i,
-    output logic [OBI_ADDR_WIDTH-1:0] obi_master_addr_o,
-    output logic                      obi_master_we_o,
-    output logic [OBI_DATA_WIDTH-1:0] obi_master_w_data_o,
-    output logic [               3:0] obi_master_be_o,
-
-    // RESPONSE CHANNEL
-    input logic obi_master_r_valid_i,
-    input logic [OBI_DATA_WIDTH-1:0] obi_master_r_data_i
+    output logic                      apb_psel_o,
+    output logic                      apb_penable_o,
+    output logic [APB_ADDR_WIDTH-1:0] apb_paddr_o,
+    output logic                      apb_pwrite_o,
+    output logic [APB_DATA_WIDTH-1:0] apb_pwdata_o,
+    input  logic [APB_DATA_WIDTH-1:0] apb_prdata_i,
+    input  logic                      apb_pready_i
 );
 
-  localparam DUMMY_CYCLES = 32;
+  localparam DummyCycles = 32;
 
   logic [               7:0] rx_counter;
   logic                      rx_counter_upd;
@@ -66,7 +51,7 @@ module obi_spi_slave #(
   logic                      fifo_data_tx_valid;
   logic                      fifo_data_tx_ready;
 
-  logic [OBI_ADDR_WIDTH-1:0] addr_sync;
+  logic [APB_ADDR_WIDTH-1:0] addr_sync;
   logic                      addr_valid_sync;
   logic                      cs_sync;
 
@@ -99,10 +84,10 @@ module obi_spi_slave #(
   );
 
   spi_slave_controller #(
-    .DUMMY_CYCLES(DUMMY_CYCLES)
+    .DUMMY_CYCLES(DummyCycles)
   ) u_slave_sm (
       .sclk              (spi_sclk_i),
-      .sys_rstn          (obi_rstn_i),
+      .sys_rstn          (apb_preset_ni),
       .cs                (spi_cs_i),
       .rx_counter        (rx_counter),
       .rx_counter_upd    (rx_counter_upd),
@@ -127,12 +112,12 @@ module obi_spi_slave #(
       .DATA_WIDTH  (32)
   ) u_dcfifo_rx (
       .clk_a  (spi_sclk_i),
-      .rstn_a (obi_rstn_i),
+      .rstn_a (apb_preset_ni),
       .data_a (ctrl_data_rx),
       .valid_a(ctrl_data_rx_valid),
       .ready_a(),
-      .clk_b  (obi_clk_i),
-      .rstn_b (obi_rstn_i),
+      .clk_b  (apb_pclk_i),
+      .rstn_b (apb_preset_ni),
       .data_b (fifo_data_rx),
       .valid_b(fifo_data_rx_valid),
       .ready_b(fifo_data_rx_ready)
@@ -141,32 +126,32 @@ module obi_spi_slave #(
   spi_slave_dc_fifo #(
       .DATA_WIDTH  (32)
   ) u_dcfifo_tx (
-      .clk_a  (obi_clk_i),
-      .rstn_a (obi_rstn_i),
+      .clk_a  (apb_pclk_i),
+      .rstn_a (apb_preset_ni),
       .data_a (fifo_data_tx),
       .valid_a(fifo_data_tx_valid),
       .ready_a(fifo_data_tx_ready),
       .clk_b  (spi_sclk_i),
-      .rstn_b (obi_rstn_i),
+      .rstn_b (apb_preset_ni),
       .data_b (ctrl_data_tx),
       .valid_b(),
       .ready_b(ctrl_data_tx_ready)
   );
 
-  spi_slave_obi_plug #(
-      .OBI_ADDR_WIDTH(OBI_ADDR_WIDTH),
-      .OBI_DATA_WIDTH(OBI_DATA_WIDTH)
-  ) u_obiplug (
-      .obi_aclk          (obi_clk_i),
-      .obi_aresetn       (obi_rstn_i),
-      .obi_master_req    (obi_master_req_o),
-      .obi_master_gnt    (obi_master_gnt_i),
-      .obi_master_addr   (obi_master_addr_o),
-      .obi_master_we     (obi_master_we_o),
-      .obi_master_w_data (obi_master_w_data_o),
-      .obi_master_be     (obi_master_be_o),
-      .obi_master_r_valid(obi_master_r_valid_i),
-      .obi_master_r_data (obi_master_r_data_i),
+  spi_slave_apb_plug #(
+      .APB_ADDR_WIDTH(APB_ADDR_WIDTH),
+      .APB_DATA_WIDTH(APB_DATA_WIDTH)
+  ) u_apbplug (
+      .pclk    (apb_pclk_i),
+      .presetn (apb_preset_ni),
+      .psel    (apb_psel_o),
+      .penable (apb_penable_o),
+      .paddr   (apb_paddr_o),
+      .pwrite  (apb_pwrite_o),
+      .pwdata  (apb_pwdata_o),
+      .prdata  (apb_prdata_i),
+      .pready  (apb_pready_i),
+      //
       .rxtx_addr         (addr_sync),
       .rxtx_addr_valid   (addr_valid_sync),
       .start_tx          (rd_wr_sync & addr_valid_sync),
@@ -181,10 +166,10 @@ module obi_spi_slave #(
   );
 
   spi_slave_syncro #(
-      .AXI_ADDR_WIDTH(OBI_ADDR_WIDTH)
+      .AXI_ADDR_WIDTH(APB_ADDR_WIDTH)
   ) u_syncro (
-      .sys_clk           (obi_clk_i),
-      .rstn              (obi_rstn_i),
+      .sys_clk           (apb_pclk_i),
+      .rstn              (apb_preset_ni),
       .cs                (spi_cs_i),
       .address           (ctrl_addr),
       .address_valid     (ctrl_addr_valid),
