@@ -1,6 +1,6 @@
 module spi_slave_apb_plug #(
-    parameter APB_ADDR_WIDTH = 32,
-    parameter APB_DATA_WIDTH = 32
+    parameter unsigned APB_ADDR_WIDTH = 32,
+    parameter unsigned APB_DATA_WIDTH = 32
 ) (
     input  logic                  pclk,
     input  logic                  presetn,
@@ -36,11 +36,12 @@ module spi_slave_apb_plug #(
   logic [15:0]               tx_counter;
   logic [15:0]               wrap_length_t;
   logic [0:0]                curr_rxtx_state; // 0 = read, 1 = write
+  logic [0:0]                rxtx_state; // 0 = read, 1 = write
 
   logic sample_rxtx_state, sample_rx, sample_tx;
 
-  localparam WRITING = 1'b1;
-  localparam READING = 1'b0;
+  localparam logic WRITING = 1'b1;
+  localparam logic READING = 1'b0;
 
   assign wrap_length_t = (wrap_length == 0) ? 16'h1 : wrap_length;
 
@@ -58,7 +59,7 @@ module spi_slave_apb_plug #(
         curr_addr <= next_addr;
 
       if (sample_rxtx_state)
-        curr_rxtx_state <= curr_rxtx_state;
+        curr_rxtx_state <= rxtx_state;
     end
   end
 
@@ -104,29 +105,29 @@ module spi_slave_apb_plug #(
       IDLE: begin
         if (rx_valid) begin
           sample_rxtx_state = 1'b1;
-          curr_rxtx_state = WRITING;
+          rxtx_state = WRITING;
           rx_ready = 1'b1;
           next_state = SETUP;
         end else if (start_tx && !cs) begin
           sample_rxtx_state = 1'b1;
-          curr_rxtx_state = READING;
+          rxtx_state = READING;
           next_state = SETUP;
         end
       end
 
       SETUP: begin
         psel = 1'b1;
-        pwrite = (curr_rxtx_state == WRITING);
+        pwrite = (rxtx_state == WRITING);
         next_state = ENABLE;
       end
 
       ENABLE: begin
         psel = 1'b1;
         penable = 1'b1;
-        pwrite = (curr_rxtx_state == WRITING);
+        pwrite = (rxtx_state == WRITING);
 
         if (pready) begin
-          if (curr_rxtx_state == READING)
+          if (rxtx_state == READING)
             next_state = TXRESP;
           else if (tx_counter == wrap_length_t - 1 || cs)
             next_state = IDLE;
