@@ -8,18 +8,20 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
-module spi_slave_rx (
+module spi_slave_rx #(
+    parameter DATA_WIDTH = 32
+) (
     input  logic        sclk,
     input  logic        cs,
     input  logic        mosi,
     input  logic [ 7:0] counter_in,
     input  logic        counter_in_upd,
-    output logic [31:0] data,
+    output logic [DATA_WIDTH-1:0] data,
     output logic        data_ready
 );
 
-  reg   [31:0] data_int;
-  reg   [31:0] data_int_next;
+  reg   [DATA_WIDTH-1:0] data_int;
+  reg   [DATA_WIDTH-1:0] data_int_next;
   reg   [ 7:0] counter;
   reg   [ 7:0] counter_trgt;
   reg   [ 7:0] counter_next;
@@ -47,7 +49,7 @@ module spi_slave_rx (
         counter_next = counter + 1;
         data_ready   = 1'b0;
       end
-      data_int_next = {data_int[30:0], mosi};
+      data_int_next = {data_int[DATA_WIDTH-2:0], mosi};
     end else begin
       counter_next  = counter;
       data_ready    = 1'b0;

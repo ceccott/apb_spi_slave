@@ -19,10 +19,10 @@ module spi_slave_apb_plug #(
     input  logic                  rxtx_addr_valid,
     input  logic                  start_tx,
     input  logic                  cs,
-    output logic [31:0]          tx_data,
+    output logic [APB_DATA_WIDTH-1:0] tx_data,
     output logic                 tx_valid,
     input  logic                 tx_ready,
-    input  logic [31:0]          rx_data,
+    input  logic [APB_DATA_WIDTH-1:0] rx_data,
     input  logic                 rx_valid,
     output logic                 rx_ready,
 
@@ -79,7 +79,7 @@ module spi_slave_apb_plug #(
     if (tx_counter == wrap_length_t - 1)
       next_addr = rxtx_addr;
     else
-      next_addr = curr_addr + 4;
+      next_addr = curr_addr + 1;
   end
 
   // FSM combinational

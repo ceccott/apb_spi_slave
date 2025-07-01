@@ -1,8 +1,11 @@
 module apb_spi_slave #(
     parameter APB_ADDR_WIDTH = 32,
-    parameter APB_DATA_WIDTH = 32
+    parameter APB_DATA_WIDTH = 32,
+    parameter SPI_MODE = 1'b0,
+    parameter READ_DUMMY_CYCLES = 4'h8
 ) (
-    //input  logic test_mode,
+
+    // SPI SLAVE
     input  logic spi_sclk_i,
     input  logic spi_cs_i,
     input  logic spi_mosi_i,
@@ -22,32 +25,30 @@ module apb_spi_slave #(
     input  logic                      apb_pready_i
 );
 
-  localparam DummyCycles = 32;
-
   logic [               7:0] rx_counter;
   logic                      rx_counter_upd;
-  logic [              31:0] rx_data;
+  logic [APB_DATA_WIDTH-1:0] rx_data;
   logic                      rx_data_valid;
 
   logic [               7:0] tx_counter;
   logic                      tx_counter_upd;
-  logic [              31:0] tx_data;
+  logic [APB_DATA_WIDTH-1:0] tx_data;
   logic                      tx_data_valid;
 
   logic                      ctrl_rd_wr;
 
-  logic [              31:0] ctrl_addr;
+  logic [APB_ADDR_WIDTH-1:0] ctrl_addr;
   logic                      ctrl_addr_valid;
 
-  logic [              31:0] ctrl_data_rx;
+  logic [APB_DATA_WIDTH-1:0] ctrl_data_rx;
   logic                      ctrl_data_rx_valid;
-  logic [              31:0] ctrl_data_tx;
+  logic [APB_DATA_WIDTH-1:0] ctrl_data_tx;
   logic                      ctrl_data_tx_ready;
 
-  logic [              31:0] fifo_data_rx;
+  logic [APB_DATA_WIDTH-1:0] fifo_data_rx;
   logic                      fifo_data_rx_valid;
   logic                      fifo_data_rx_ready;
-  logic [              31:0] fifo_data_tx;
+  logic [APB_DATA_WIDTH-1:0] fifo_data_tx;
   logic                      fifo_data_tx_valid;
   logic                      fifo_data_tx_ready;
 
@@ -61,7 +62,9 @@ module apb_spi_slave #(
   logic [              15:0] wrap_length;
   logic                      test_mode;
 
-  spi_slave_rx u_rxreg (
+  spi_slave_rx #(
+    .DATA_WIDTH(APB_DATA_WIDTH)
+  ) u_rxreg (
       .sclk          (spi_sclk_i),
       .cs            (spi_cs_i),
       .mosi          (spi_mosi_i),
@@ -71,8 +74,10 @@ module apb_spi_slave #(
       .data_ready    (rx_data_valid)
   );
 
-  spi_slave_tx u_txreg (
-      .test_mode     (test_mode),
+  spi_slave_tx #(
+    .DATA_WIDTH(APB_DATA_WIDTH)
+  ) u_txreg (
+      .test_mode     (SPI_MODE),
       .sclk          (spi_sclk_i),
       .cs            (spi_cs_i),
       .miso          (spi_miso_o),
@@ -84,7 +89,9 @@ module apb_spi_slave #(
   );
 
   spi_slave_controller #(
-    .DUMMY_CYCLES(DummyCycles)
+    .DUMMY_CYCLES(READ_DUMMY_CYCLES),
+    .ADDR_WIDTH(APB_ADDR_WIDTH),
+    .DATA_WIDTH(APB_DATA_WIDTH)
   ) u_slave_sm (
       .sclk              (spi_sclk_i),
       .sys_rstn          (apb_preset_ni),
@@ -109,7 +116,7 @@ module apb_spi_slave #(
   );
 
   spi_slave_dc_fifo #(
-      .DATA_WIDTH  (32)
+      .DATA_WIDTH(APB_DATA_WIDTH)
   ) u_dcfifo_rx (
       .clk_a  (spi_sclk_i),
       .rstn_a (apb_preset_ni),
@@ -124,7 +131,7 @@ module apb_spi_slave #(
   );
 
   spi_slave_dc_fifo #(
-      .DATA_WIDTH  (32)
+      .DATA_WIDTH(APB_DATA_WIDTH)
   ) u_dcfifo_tx (
       .clk_a  (apb_pclk_i),
       .rstn_a (apb_preset_ni),
@@ -166,7 +173,7 @@ module apb_spi_slave #(
   );
 
   spi_slave_syncro #(
-      .AXI_ADDR_WIDTH(APB_ADDR_WIDTH)
+      .ADDR_WIDTH(APB_ADDR_WIDTH)
   ) u_syncro (
       .sys_clk           (apb_pclk_i),
       .rstn              (apb_preset_ni),
@@ -180,5 +187,4 @@ module apb_spi_slave #(
       .rd_wr_sync        (rd_wr_sync)
   );
 
-  assign test_mode = 1'b0;
 endmodule

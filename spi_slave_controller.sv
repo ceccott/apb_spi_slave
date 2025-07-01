@@ -10,31 +10,33 @@
 
 
 module spi_slave_controller #(
-  parameter DUMMY_CYCLES = 32
+  parameter DUMMY_CYCLES = 8,
+  parameter ADDR_WIDTH = 12,
+  parameter DATA_WIDTH = 8
 ) (
     input  logic        sclk,
     input  logic        sys_rstn,
     input  logic        cs,
     output logic [ 7:0] rx_counter,
     output logic        rx_counter_upd,
-    input  logic [31:0] rx_data,
+    input  logic [DATA_WIDTH-1:0] rx_data,
     input  logic        rx_data_valid,
     output logic [ 7:0] tx_counter,
     output logic        tx_counter_upd,
-    output logic [31:0] tx_data,
+    output logic [DATA_WIDTH-1:0] tx_data,
     output logic        tx_data_valid,
     input  logic        tx_done,
     output logic        ctrl_rd_wr,
-    output logic [31:0] ctrl_addr,
+    output logic [ADDR_WIDTH-1:0] ctrl_addr,
     output logic        ctrl_addr_valid,
-    output logic [31:0] ctrl_data_rx,
+    output logic [DATA_WIDTH-1:0] ctrl_data_rx,
     output logic        ctrl_data_rx_valid,
-    input  logic [31:0] ctrl_data_tx,
+    input  logic [DATA_WIDTH-1:0] ctrl_data_tx,
     output logic        ctrl_data_tx_ready,
     output logic [15:0] wrap_length
 );
 
-  localparam REG_SIZE = 8;
+  localparam REG_SIZE = DATA_WIDTH;
 
 
   enum logic [2:0] {
@@ -50,7 +52,7 @@ module spi_slave_controller #(
 
   logic                decode_cmd_comb;
 
-  logic [        31:0] addr_reg;
+  logic [ADDR_WIDTH-1:0] addr_reg;
   logic [         7:0] cmd_reg;
 
   logic                sample_ADDR;
@@ -102,9 +104,9 @@ module spi_slave_controller #(
       .wrap_length(wrap_length)
   );
   always_comb begin
-    rx_counter              = 8'h1F;
+    rx_counter              = DATA_WIDTH-1;
     rx_counter_upd          = 0;
-    tx_counter_next         = 8'h1F;
+    tx_counter_next         = DATA_WIDTH-1;
     tx_counter_upd_next     = 0;
     decode_cmd_comb         = 1'b0;
     sample_ADDR             = 1'b0;
@@ -123,16 +125,17 @@ module spi_slave_controller #(
           if (get_addr) begin
             state_next     = ADDR;
             rx_counter_upd = 1;
-            rx_counter     = 8'h1F;
+            rx_counter     = ADDR_WIDTH-1;
           end else if (get_data) begin
             state_next     = DATA_RX;
             rx_counter_upd = 1;
-            if (enable_regs) rx_counter = 8'h7;
+            if (enable_regs) rx_counter = REG_SIZE-1;
+            else rx_counter = DATA_WIDTH-1;
           end else begin
             state_next          = DATA_TX;
             tx_counter_upd_next = 1;
             tx_data_valid_next  = 1'b1;
-            tx_counter_next     = 8'h1F;
+            tx_counter_next     = DATA_WIDTH-1;
             if (~enable_regs) ctrl_data_tx_ready_next = 1'b1;
           end
         end else begin
@@ -150,7 +153,7 @@ module spi_slave_controller #(
           end else begin
             state_next     = DATA_RX;
             rx_counter_upd = 1;
-            rx_counter     = 8'h1F;
+            rx_counter     = DATA_WIDTH-1;
           end
         end else begin
           state_next = ADDR;
@@ -159,7 +162,7 @@ module spi_slave_controller #(
       DUMMY: begin
         if (rx_data_valid) begin
           state_next          = DATA_TX;
-          tx_counter_next     = 8'h1F;
+          tx_counter_next     = DATA_WIDTH-1;
           tx_counter_upd_next = 1;
           tx_data_valid_next  = 1'b1;
           if (~enable_regs) ctrl_data_tx_ready_next = 1'b1;
@@ -173,11 +176,11 @@ module spi_slave_controller #(
           else ctrl_data_rx_valid = 1'b1;
           if (enable_cont) begin
             state_next     = DATA_RX;
-            rx_counter     = 8'h1F;
+            rx_counter     = DATA_WIDTH-1;
             rx_counter_upd = 1;
           end else begin
             state_next     = CMD;
-            rx_counter     = 8'h7;
+            rx_counter     = DATA_WIDTH-1;
             rx_counter_upd = 1;
           end
         end else begin
@@ -188,13 +191,13 @@ module spi_slave_controller #(
         if (tx_done_reg) begin
           if (enable_cont) begin
             state_next          = DATA_TX;
-            tx_counter_next     = 8'h1F;
+            tx_counter_next     = DATA_WIDTH-1;
             tx_counter_upd_next = 1;
             tx_data_valid_next  = 1'b1;
             if (~enable_regs) ctrl_data_tx_ready_next = 1'b1;
           end else begin
             state_next     = CMD;
-            rx_counter     = 8'h7;
+            rx_counter     = DATA_WIDTH-1;
             rx_counter_upd = 1;
           end
         end else begin
@@ -228,7 +231,7 @@ module spi_slave_controller #(
       tx_counter         <= 'h0;
       tx_data            <= 'h0;
     end else begin
-      if (sample_ADDR) addr_reg <= rx_data;
+      if (sample_ADDR) addr_reg <= rx_data[ADDR_WIDTH-1:0];
       if (sample_CMD) cmd_reg <= rx_data[7:0];
       ctrl_addr_valid    <= sample_ADDR;
       tx_counter_upd     <= tx_counter_upd_next;
@@ -236,7 +239,7 @@ module spi_slave_controller #(
       tx_data_valid      <= tx_data_valid_next;
       tx_done_reg        <= tx_done;
       ctrl_data_tx_ready <= ctrl_data_tx_ready_next;
-      tx_data            <= (enable_regs) ? {24'b0, reg_data} : ctrl_data_tx;
+      tx_data            <= (enable_regs) ? reg_data : ctrl_data_tx;
     end
   end
 

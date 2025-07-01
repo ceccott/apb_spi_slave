@@ -8,20 +8,22 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
-module spi_slave_tx (
+module spi_slave_tx #(
+    parameter DATA_WIDTH = 32
+) (
     input  logic        test_mode,
     input  logic        sclk,
     input  logic        cs,
     output logic        miso,
     input  logic [ 7:0] counter_in,
     input  logic        counter_in_upd,
-    input  logic [31:0] data,
+    input  logic [DATA_WIDTH-1:0] data,
     input  logic        data_valid,
     output logic        done
 );
 
-  reg [31:0] data_int;
-  reg [31:0] data_int_next;
+  reg [DATA_WIDTH-1:0] data_int;
+  reg [DATA_WIDTH-1:0] data_int_next;
   reg [7:0] counter;
   reg [7:0] counter_trgt;
   reg [7:0] counter_next;
@@ -31,7 +33,7 @@ module spi_slave_tx (
   logic sclk_inv;
   logic sclk_test;
 
-  assign miso = data_int[31];
+  assign miso = data_int[DATA_WIDTH-1];
 
 
   always_comb begin
@@ -52,7 +54,7 @@ module spi_slave_tx (
       if (data_valid) begin
         data_int_next = data;
       end else begin
-        data_int_next = {data_int[30:0], 1'b0};
+        data_int_next = {data_int[DATA_WIDTH-2:0], 1'b0};
       end
     end else begin
       counter_next  = counter;
