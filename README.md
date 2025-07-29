@@ -44,8 +44,8 @@ Here's a breakdown of the major components and their interactions:
 *   **`spi_slave_regs` (Register File):**
     *   Contains a set of configurable registers.
     *   These registers control the behavior of the IP, such as:
-        *   **Dummy Cycles:** The number of dummy cycles for read operations.
-        *   **Wrap Length:** The length of burst transfers.
+        *   **Dummy Cycles:** The number of dummy cycles for read operations (the actual value of cycles introduced is the register value + 1).
+        *   **Wrap Length:** The max length of burst transfers.
     *   These registers are accessible from the SPI master.
 
 *   **`spi_slave_dc_fifo` (Dual-Clock FIFO):**
@@ -72,8 +72,8 @@ The following commands are supported:
 
 | Command | Value | Description |
 | :--- | :--- | :--- |
-| `write_mem` | `8'h02` | Write to memory. Followed by a 32-bit address and data. |
-| `read_mem` | `8'h0B` | Read from memory. Followed by a 32-bit address. |
+| `write_mem` | `8'h02` | Write to memory. Followed by address and data. |
+| `read_mem` | `8'h0B` | Read from memory. Followed by a address. |
 | `read_reg0` | `8'h07` | Read from register 0 (dummy cycles). |
 | `write_reg0` | `8'h11` | Write to register 0 (dummy cycles). |
 | `write_reg1` | `8'h20` | Write to register 1 (wrap length, low). |
@@ -117,7 +117,7 @@ The IP has several parameters that can be configured at instantiation time:
 *   `APB_ADDR_WIDTH`: The width of the APB address bus.
 *   `APB_DATA_WIDTH`: The width of the APB data bus.
 *   `SPI_MODE`: The SPI mode (0 or 1).
-*   `READ_DUMMY_CYCLES`: The default number of dummy cycles for read operations.
+*   `READ_DUMMY_CYCLES`: The default number of dummy cycles for read operations (7 by default, meaning 8 extra cycles).
 
 The number of dummy cycles and the wrap length can also be configured at runtime by writing to the internal registers.
 

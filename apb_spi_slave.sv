@@ -2,7 +2,7 @@ module apb_spi_slave #(
     parameter APB_ADDR_WIDTH = 32,
     parameter APB_DATA_WIDTH = 32,
     parameter SPI_MODE = 1'b0,
-    parameter READ_DUMMY_CYCLES = 4'h8
+    parameter READ_DUMMY_CYCLES = 4'h7 // 8 cycles
 ) (
 
     // SPI SLAVE
