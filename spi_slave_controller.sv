@@ -10,9 +10,9 @@
 
 
 module spi_slave_controller #(
-  parameter DUMMY_CYCLES = 8,
+  parameter DUMMY_CYCLES = 8'h7,
   parameter ADDR_WIDTH = 12,
-  parameter DATA_WIDTH = 8
+  parameter DATA_WIDTH = 4'h7
 ) (
     input  logic        sclk,
     input  logic        sys_rstn,
@@ -35,9 +35,6 @@ module spi_slave_controller #(
     output logic        ctrl_data_tx_ready,
     output logic [15:0] wrap_length
 );
-
-  localparam REG_SIZE = DATA_WIDTH;
-
 
   enum logic [2:0] {
     CMD,
@@ -65,7 +62,7 @@ module spi_slave_controller #(
   logic                enable_cont;
   logic                enable_regs;
   logic [         1:0] reg_sel;
-  logic [REG_SIZE-1:0] reg_data;
+  logic [DATA_WIDTH-1:0] reg_data;
   logic                reg_valid;
 
   logic                ctrl_data_tx_ready_next;
@@ -90,12 +87,12 @@ module spi_slave_controller #(
   );
 
   spi_slave_regs #(
-      .REG_SIZE(REG_SIZE),
+      .REG_SIZE(DATA_WIDTH),
       .DUMMY_CYCLES(DUMMY_CYCLES)
   ) u_spiregs (
       .sclk(sclk),
       .rstn(sys_rstn),
-      .wr_data(rx_data[REG_SIZE-1:0]),
+      .wr_data(rx_data[DATA_WIDTH-1:0]),
       .wr_addr(reg_sel),
       .wr_data_valid(reg_valid),
       .rd_data(reg_data),
@@ -129,7 +126,7 @@ module spi_slave_controller #(
           end else if (get_data) begin
             state_next     = DATA_RX;
             rx_counter_upd = 1;
-            if (enable_regs) rx_counter = REG_SIZE-1;
+            if (enable_regs) rx_counter = DATA_WIDTH-1;
             else rx_counter = DATA_WIDTH-1;
           end else begin
             state_next          = DATA_TX;

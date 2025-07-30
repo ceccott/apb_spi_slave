@@ -2,7 +2,9 @@ module apb_spi_slave #(
     parameter APB_ADDR_WIDTH = 32,
     parameter APB_DATA_WIDTH = 32,
     parameter SPI_MODE = 1'b0,
-    parameter READ_DUMMY_CYCLES = 4'h7 // 8 cycles
+    parameter READ_DUMMY_CYCLES = 8'h7, // 8 cycles
+    parameter TX_FIFO_LOG_DEPTH = 2,
+    parameter RX_FIFO_LOG_DEPTH = 2
 ) (
 
     // SPI SLAVE
@@ -116,7 +118,8 @@ module apb_spi_slave #(
   );
 
   spi_slave_dc_fifo #(
-      .DATA_WIDTH(APB_DATA_WIDTH)
+      .DATA_WIDTH(APB_DATA_WIDTH),
+      .FIFO_LOG_DEPTH(RX_FIFO_LOG_DEPTH)
   ) u_dcfifo_rx (
       .clk_a  (spi_sclk_i),
       .rstn_a (apb_preset_ni),
@@ -131,7 +134,8 @@ module apb_spi_slave #(
   );
 
   spi_slave_dc_fifo #(
-      .DATA_WIDTH(APB_DATA_WIDTH)
+      .DATA_WIDTH(APB_DATA_WIDTH),
+      .FIFO_LOG_DEPTH(TX_FIFO_LOG_DEPTH)
   ) u_dcfifo_tx (
       .clk_a  (apb_pclk_i),
       .rstn_a (apb_preset_ni),

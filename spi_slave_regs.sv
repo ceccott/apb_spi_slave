@@ -10,7 +10,7 @@
 
 module spi_slave_regs #(
     parameter REG_SIZE = 8,
-    parameter DUMMY_CYCLES = 32
+    parameter DUMMY_CYCLES = 8'h7
 ) (
     input  logic                sclk,
     input  logic                rstn,

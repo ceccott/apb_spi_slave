@@ -9,7 +9,8 @@
 // specific language governing permissions and limitations under the License.
 
 module spi_slave_dc_fifo #(
-    parameter DATA_WIDTH   = 32
+    parameter DATA_WIDTH   = 32,
+    parameter FIFO_LOG_DEPTH = 2
 ) (
     input logic clk_a,
     input logic rstn_a,
@@ -26,9 +27,9 @@ module spi_slave_dc_fifo #(
   typedef logic [DATA_WIDTH-1:0] data_t;
 
   cdc_fifo_gray #(
-      .WIDTH(32),
+      .WIDTH(DATA_WIDTH),
       .T(data_t),
-      .LOG_DEPTH(4),
+      .LOG_DEPTH(FIFO_LOG_DEPTH),
       .SYNC_STAGES(2)
   ) i_cdc_fifo_gray (
 
