@@ -12,14 +12,15 @@
 module spi_slave_controller #(
   parameter DUMMY_CYCLES = 8'h7,
   parameter ADDR_WIDTH = 12,
-  parameter DATA_WIDTH = 4'h7
+  parameter DATA_WIDTH = 4'h8,
+  localparam RX_DATA_WIDTH = (DATA_WIDTH >= ADDR_WIDTH) ? DATA_WIDTH : ADDR_WIDTH
 ) (
     input  logic        sclk,
     input  logic        sys_rstn,
     input  logic        cs,
     output logic [ 7:0] rx_counter,
     output logic        rx_counter_upd,
-    input  logic [DATA_WIDTH-1:0] rx_data,
+    input  logic [RX_DATA_WIDTH-1:0] rx_data,
     input  logic        rx_data_valid,
     output logic [ 7:0] tx_counter,
     output logic        tx_counter_upd,

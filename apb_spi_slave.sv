@@ -27,9 +27,11 @@ module apb_spi_slave #(
     input  logic                      apb_pready_i
 );
 
+  localparam RX_DATA_WIDTH = (APB_DATA_WIDTH >= APB_ADDR_WIDTH) ? APB_DATA_WIDTH : APB_ADDR_WIDTH;
+
   logic [               7:0] rx_counter;
   logic                      rx_counter_upd;
-  logic [APB_DATA_WIDTH-1:0] rx_data;
+  logic [RX_DATA_WIDTH-1:0] rx_data;
   logic                      rx_data_valid;
 
   logic [               7:0] tx_counter;
@@ -65,7 +67,7 @@ module apb_spi_slave #(
   logic                      test_mode;
 
   spi_slave_rx #(
-    .DATA_WIDTH(APB_DATA_WIDTH)
+    .DATA_WIDTH(RX_DATA_WIDTH)
   ) u_rxreg (
       .sclk          (spi_sclk_i),
       .cs            (spi_cs_i),
