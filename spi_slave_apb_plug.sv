@@ -137,9 +137,10 @@ module spi_slave_apb_plug #(
         pwrite = (rxtx_state == WRITING);
 
         if (pready) begin
-          if (rxtx_state == READING)
+          if (rxtx_state == READING) begin
+            tx_valid = 1'b1;
             next_state = TXRESP;
-          else if (tx_counter == wrap_length_t - 1 || cs)
+          end else if (tx_counter == wrap_length_t - 1 || cs)
             next_state = IDLE;
           else
             next_state = SETUP;
