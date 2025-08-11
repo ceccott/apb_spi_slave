@@ -45,8 +45,8 @@ module spi_slave_apb_plug #(
   logic [APB_ADDR_WIDTH-1:0] curr_addr, next_addr;
   logic [15:0]               tx_counter;
   logic [15:0]               wrap_length_t;
-  logic [0:0]                curr_rxtx_state; // 0 = read, 1 = write
-  logic [0:0]                rxtx_state; // 0 = read, 1 = write
+  logic                      curr_rxtx_state; // 0 = read, 1 = write
+  logic                      rxtx_state; // 0 = read, 1 = write
 
   logic sample_rxtx_state, sample_rx, sample_tx;
 
@@ -114,6 +114,7 @@ module spi_slave_apb_plug #(
 
     case (state)
       IDLE: begin
+        rxtx_state = READING;
         if (rx_valid) begin
           sample_rxtx_state = 1'b1;
           rxtx_state = WRITING;
@@ -128,17 +129,17 @@ module spi_slave_apb_plug #(
 
       SETUP: begin
         psel = 1'b1;
-        pwrite = (rxtx_state == WRITING);
+        pwrite = (curr_rxtx_state == WRITING);
         next_state = ENABLE;
       end
 
       ENABLE: begin
         psel = 1'b1;
         penable = 1'b1;
-        pwrite = (rxtx_state == WRITING);
+        pwrite = (curr_rxtx_state == WRITING);
 
         if (pready) begin
-          if (rxtx_state == READING) begin
+          if (curr_rxtx_state == READING) begin
             tx_valid = 1'b1;
             next_state = TXRESP;
           end else if (tx_counter == wrap_length_t - 1 || cs)
@@ -156,6 +157,10 @@ module spi_slave_apb_plug #(
           else
             next_state = SETUP;
         end
+      end
+      default: begin
+        next_state = IDLE;
+        rxtx_state = READING;
       end
     endcase
   end
