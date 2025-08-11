@@ -96,6 +96,7 @@ module spi_slave_apb_plug #(
   // FSM combinational
   always_comb begin
     next_state = state;
+    rxtx_state = WRITING;
 
     psel   = 1'b0;
     penable = 1'b0;
