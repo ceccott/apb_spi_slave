@@ -123,7 +123,7 @@ The number of dummy cycles and the wrap length can also be configured at runtime
 
 #### 5. Spi Slave Controller FSM diagram 
 ```mermaid
-graph TD;
+stateDiagram-v2
     [*] --> CMD
 
     CMD --> ADDR: rx_data_valid && get_addr
