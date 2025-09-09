@@ -11,6 +11,47 @@ This IP is a fork of the `obi_spi_slave` project, adapted for the APB bus protoc
 #### 2. High-Level Architecture
 
 The IP is composed of several interconnected modules, each with a specific role. The top-level module, `apb_spi_slave`, instantiates and connects these components.
+```mermaid
+graph LR
+    subgraph "SPI Clock Domain (sclk)"
+        direction LR
+        SPI_IF([SPI Interface\nsclk, cs, mosi, miso])
+
+        RX[spi_slave_rx]
+        TX[spi_slave_tx]
+        CTRL[spi_slave_controller]
+
+        SPI_IF -- mosi --> RX
+        TX -- miso --> SPI_IF
+        RX -- "rx_data (Parallel)" --> CTRL
+        CTRL -- tx_data --> TX
+    end
+
+    subgraph "Clock Domain Crossing"
+        direction TB
+        SYNC[spi_slave_syncro]
+        RX_FIFO[RX spi_slave_dc_fifo]
+        TX_FIFO[TX spi_slave_dc_fifo]
+    end
+
+    subgraph "APB Clock Domain (pclk)"
+        direction LR
+        PLUG[spi_slave_apb_plug]
+        APB_IF([APB Interface\npclk, preset_n, paddr, etc.])
+
+        PLUG <--> APB_IF
+    end
+
+    %% Connections between domains
+    CTRL -- "ctrl_addr, ctrl_rd_wr, ctrl_addr_valid" --> SYNC
+    CTRL -- ctrl_data_rx --> RX_FIFO
+    TX_FIFO -- ctrl_data_tx --> CTRL
+
+    SYNC -- "addr_sync, rd_wr_sync, addr_valid_sync" --> PLUG
+    RX_FIFO -- fifo_data_rx --> PLUG
+    PLUG -- fifo_data_tx --> TX_FIFO
+```
+
 
 Here's a breakdown of the major components and their interactions:
 
