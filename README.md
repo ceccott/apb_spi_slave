@@ -15,7 +15,7 @@ The IP is composed of several interconnected modules, each with a specific role.
 graph LR
     subgraph "SPI Clock Domain (sclk)"
         direction LR
-        SPI_IF([SPI Interface\nsclk, cs, mosi, miso])
+        SPI_IF{{SPI Interface}}
 
         RX[spi_slave_rx]
         TX[spi_slave_tx]
@@ -37,7 +37,7 @@ graph LR
     subgraph "APB Clock Domain (pclk)"
         direction LR
         PLUG[spi_slave_apb_plug]
-        APB_IF([APB Interface\npclk, preset_n, paddr, etc.])
+        APB_IF{{APB Interface}}
 
         PLUG <--> APB_IF
     end
