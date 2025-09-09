@@ -117,7 +117,7 @@ module spi_slave_controller #(
     case (state)
       CMD: begin
         decode_cmd_comb = 1'b1;
-        ctrl_data_tx_ready_next = 1'b1;  //empty TX fifo if not allready empty
+        ctrl_data_tx_ready_next = 1'b1;  //empty TX fifo if not already empty
         if (rx_data_valid) begin
           sample_CMD = 1'b1;
           if (get_addr) begin

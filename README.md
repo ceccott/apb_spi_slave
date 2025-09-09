@@ -121,6 +121,25 @@ The IP has several parameters that can be configured at instantiation time:
 
 The number of dummy cycles and the wrap length can also be configured at runtime by writing to the internal registers.
 
-#### 5. Synthesis suggestions
+#### 5. Spi Slave Controller FSM diagram 
+```mermaid
+graph TD;
+    [*] --> CMD
+
+    CMD --> ADDR: rx_data_valid && get_addr
+    CMD --> DATA_RX: rx_data_valid && get_data
+    CMD --> DATA_TX: rx_data_valid && !(get_addr || get_data)
+
+    ADDR --> DUMMY: rx_data_valid && wait_dummy
+    ADDR --> DATA_RX: rx_data_valid && !wait_dummy
+
+    DUMMY --> DATA_TX: rx_data_valid
+
+    DATA_RX --> CMD: rx_data_valid && !enable_cont
+
+    DATA_TX --> CMD: tx_done_reg && !enable_cont
+```
+
+#### 6. Synthesis suggestions
 
     [TODO]
