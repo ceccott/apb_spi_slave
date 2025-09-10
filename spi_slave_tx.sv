@@ -15,19 +15,21 @@ module spi_slave_tx #(
     input  logic        sclk,
     input  logic        cs,
     output logic        miso,
-    input  logic [ 7:0] counter_in,
+    input  logic [$clog2(DATA_WIDTH)-1:0] counter_in,
     input  logic        counter_in_upd,
     input  logic [DATA_WIDTH-1:0] data,
     input  logic        data_valid,
     output logic        done
 );
 
+  localparam CntWidth = $clog2(DATA_WIDTH);  // No RISCV compliant
+  
   reg [DATA_WIDTH-1:0] data_int;
   reg [DATA_WIDTH-1:0] data_int_next;
-  reg [7:0] counter;
-  reg [7:0] counter_trgt;
-  reg [7:0] counter_next;
-  reg [7:0] counter_trgt_next;
+  reg [CntWidth-1:0] counter;
+  reg [CntWidth-1:0] counter_trgt;
+  reg [CntWidth-1:0] counter_next;
+  reg [CntWidth-1:0] counter_trgt_next;
   logic running;
   logic running_next;
   logic sclk_inv;
@@ -48,8 +50,8 @@ module spi_slave_tx #(
     if (running || counter_in_upd) begin
       if (counter == counter_trgt) begin
         done = 1'b1;
-        counter_next = 0;
-      end else counter_next = counter + 1;
+        counter_next = '0;
+      end else counter_next = counter + 1'b1;
 
       if (data_valid) begin
         data_int_next = data;
@@ -75,7 +77,7 @@ module spi_slave_tx #(
   always @(posedge sclk_test or posedge cs) begin
     if (cs == 1'b1) begin
       counter      <= 'h0;
-      counter_trgt <= 'h7;
+      counter_trgt <= '1; 
       data_int     <= 'h0;
       running      <= 1'b0;
     end else begin

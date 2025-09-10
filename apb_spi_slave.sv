@@ -1,6 +1,6 @@
 module apb_spi_slave #(
-    parameter APB_ADDR_WIDTH = 32,
-    parameter APB_DATA_WIDTH = 32,
+    parameter APB_ADDR_WIDTH = 12,
+    parameter APB_DATA_WIDTH = 8,
     parameter SPI_MODE = 1'b0,
     parameter READ_DUMMY_CYCLES = 8'h7, // 8 cycles
     parameter TX_FIFO_LOG_DEPTH = 2,
@@ -155,27 +155,27 @@ module apb_spi_slave #(
       .APB_ADDR_WIDTH(APB_ADDR_WIDTH),
       .APB_DATA_WIDTH(APB_DATA_WIDTH)
   ) u_apbplug (
-      .pclk    (apb_pclk_i),
-      .presetn (apb_preset_ni),
-      .psel    (apb_psel_o),
-      .penable (apb_penable_o),
-      .paddr   (apb_paddr_o),
-      .pwrite  (apb_pwrite_o),
-      .pwdata  (apb_pwdata_o),
-      .prdata  (apb_prdata_i),
-      .pready  (apb_pready_i),
+      .pclk_i    (apb_pclk_i),
+      .preset_ni (apb_preset_ni),
+      .psel_o    (apb_psel_o),
+      .penable_o (apb_penable_o),
+      .paddr_o   (apb_paddr_o),
+      .pwrite_o  (apb_pwrite_o),
+      .pwdata_o  (apb_pwdata_o),
+      .prdata_i  (apb_prdata_i),
+      .pready_i  (apb_pready_i),
       //
-      .rxtx_addr         (addr_sync),
-      .rxtx_addr_valid   (addr_valid_sync),
-      .start_tx          (rd_wr_sync & addr_valid_sync),
-      .cs                (cs_sync),
-      .tx_data           (fifo_data_tx),
-      .tx_valid          (fifo_data_tx_valid),
-      .tx_ready          (fifo_data_tx_ready),
-      .rx_data           (fifo_data_rx),
-      .rx_valid          (fifo_data_rx_valid),
-      .rx_ready          (fifo_data_rx_ready),
-      .wrap_length       (wrap_length)
+      .rxtx_addr_i         (addr_sync),
+      .rxtx_addr_valid_i   (addr_valid_sync),
+      .start_tx_i          (rd_wr_sync & addr_valid_sync),
+      .cs_ni                (cs_sync),
+      .tx_data_o           (fifo_data_tx),
+      .tx_valid_o          (fifo_data_tx_valid),
+      .tx_ready_i          (fifo_data_tx_ready),
+      .rx_data_i           (fifo_data_rx),
+      .rx_valid_i          (fifo_data_rx_valid),
+      .rx_ready_o          (fifo_data_rx_ready),
+      .wrap_length_i       (wrap_length)
   );
 
   spi_slave_syncro #(

@@ -8,19 +8,19 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
-`define write_mem 8'h2
-`define read_mem 8'hB
-`define read_reg0 8'h7
-`define write_reg0 8'h11
-`define write_reg1 8'h20
-`define read_reg1 8'h21
-`define write_reg2 8'h30
-`define read_reg2 8'h31
+`define write_mem   4'h1
+`define read_mem    4'h2
+`define read_reg0   4'h3
+`define write_reg0  4'h4
+`define write_reg1  4'h5
+`define read_reg1   4'h6
+`define write_reg2  4'h6
+`define read_reg2   4'h7
 
 
 
 module spi_slave_cmd_parser (
-    input  logic [7:0] cmd,
+    input  logic [3:0] cmd,
     output logic       get_addr,
     output logic       get_data,
     output logic       send_data,
@@ -32,39 +32,39 @@ module spi_slave_cmd_parser (
 
 
   always_comb begin
-    get_addr    = 0;
-    get_data    = 0;
-    send_data   = 0;
-    enable_cont = 0;
+    get_addr    = 1'b0;
+    get_data    = 1'b0;
+    send_data   = 1'b0;
+    enable_cont = 1'b0;
     enable_regs = 1'b0;
-    wait_dummy  = 0;
+    wait_dummy  = 1'b0;
     reg_sel     = 2'b00;
     case (cmd)
       `write_mem: begin
-        get_addr    = 1;
-        get_data    = 1;
-        send_data   = 0;
+        get_addr    = 1'b1;
+        get_data    = 1'b1;
+        send_data   = 1'b0;
         enable_cont = 1'b1;
         enable_regs = 1'b0;
-        wait_dummy  = 0;
+        wait_dummy  = 1'b0;
         reg_sel     = 2'b00;
       end
       `read_reg0: begin
-        get_addr    = 0;
-        get_data    = 0;
-        send_data   = 1;
-        enable_cont = 0;
+        get_addr    = 1'b0;
+        get_data    = 1'b0;
+        send_data   = 1'b1;
+        enable_cont = 1'b0;
         enable_regs = 1'b1;
-        wait_dummy  = 0;
+        wait_dummy  = 1'b0;
         reg_sel     = 2'b00;
       end
       `read_mem: begin
-        get_addr    = 1;
-        get_data    = 0;
-        send_data   = 1;
+        get_addr    = 1'b1;
+        get_data    = 1'b0;
+        send_data   = 1'b1;
         enable_cont = 1'b1;
         enable_regs = 1'b0;
-        wait_dummy  = 1;
+        wait_dummy  = 1'b1;
         reg_sel     = 2'b00;
       end
       `write_reg0: begin
@@ -113,12 +113,12 @@ module spi_slave_cmd_parser (
         reg_sel     = 2'b10;
       end
       default: begin
-        get_addr    = 0;
+        get_addr    = 1'b0;
         get_data    = 1'b0;
-        send_data   = 0;
-        enable_cont = 0;
+        send_data   = 1'b0;
+        enable_cont = 1'b0;
         enable_regs = 1'b0;
-        wait_dummy  = 0;
+        wait_dummy  = 1'b0;
         reg_sel     = 2'b00;
       end
     endcase

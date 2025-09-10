@@ -18,7 +18,7 @@ module spi_slave_controller #(
     input  logic        sclk,
     input  logic        sys_rstn,
     input  logic        cs,
-    output logic [ 7:0] rx_counter,
+    output logic [$clog2(RX_DATA_WIDTH)-1:0] rx_counter,
     output logic        rx_counter_upd,
     input  logic [RX_DATA_WIDTH-1:0] rx_data,
     input  logic        rx_data_valid,
@@ -46,12 +46,12 @@ module spi_slave_controller #(
   }
       state, state_next;
 
-  logic [         7:0] command;
+  logic [         3:0] command;
 
   logic                decode_cmd_comb;
 
   logic [ADDR_WIDTH-1:0] addr_reg;
-  logic [         7:0] cmd_reg;
+  logic [         3:0] cmd_reg;
 
   logic                sample_ADDR;
   logic                sample_CMD;
@@ -74,7 +74,7 @@ module spi_slave_controller #(
 
   logic [         7:0] s_dummy_cycles;
 
-  assign command = decode_cmd_comb ? rx_data[7:0] : cmd_reg;
+  assign command = decode_cmd_comb ? rx_data[3:0] : cmd_reg;
 
   spi_slave_cmd_parser u_cmd_parser (
       .cmd        (command),      // In,
