@@ -22,8 +22,7 @@ module spi_slave_tx #(
     output logic        done
 );
 
-  localparam CntWidth = $clog2(DATA_WIDTH);  // No RISCV compliant
-  
+  localparam CntWidth = $clog2(DATA_WIDTH);  
   reg [DATA_WIDTH-1:0] data_int;
   reg [DATA_WIDTH-1:0] data_int_next;
   reg [CntWidth-1:0] counter;

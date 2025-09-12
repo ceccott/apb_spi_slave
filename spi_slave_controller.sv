@@ -22,7 +22,7 @@ module spi_slave_controller #(
     output logic        rx_counter_upd,
     input  logic [RX_DATA_WIDTH-1:0] rx_data,
     input  logic        rx_data_valid,
-    output logic [DATA_WIDTH-1:0] tx_counter,
+    output logic [$clog2(DATA_WIDTH)-1:0] tx_counter,
     output logic        tx_counter_upd,
     output logic [DATA_WIDTH-1:0] tx_data,
     output logic        tx_data_valid,
@@ -67,7 +67,7 @@ module spi_slave_controller #(
   logic                reg_valid;
 
   logic                ctrl_data_tx_ready_next;
-  logic [         7:0] tx_counter_next;
+  logic [$clog2(DATA_WIDTH)-1:0] tx_counter_next;
   logic                tx_counter_upd_next;
   logic                tx_data_valid_next;
   logic                tx_done_reg;
