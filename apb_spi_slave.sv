@@ -29,12 +29,12 @@ module apb_spi_slave #(
 
   localparam RX_DATA_WIDTH = (APB_DATA_WIDTH >= APB_ADDR_WIDTH) ? APB_DATA_WIDTH : APB_ADDR_WIDTH;
 
-  logic [               7:0] rx_counter;
+  logic [RX_DATA_WIDTH-1:0] rx_counter;
   logic                      rx_counter_upd;
   logic [RX_DATA_WIDTH-1:0] rx_data;
   logic                      rx_data_valid;
 
-  logic [               7:0] tx_counter;
+  logic [APB_DATA_WIDTH-1:0] tx_counter;
   logic                      tx_counter_upd;
   logic [APB_DATA_WIDTH-1:0] tx_data;
   logic                      tx_data_valid;

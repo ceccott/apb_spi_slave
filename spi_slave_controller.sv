@@ -22,7 +22,7 @@ module spi_slave_controller #(
     output logic        rx_counter_upd,
     input  logic [RX_DATA_WIDTH-1:0] rx_data,
     input  logic        rx_data_valid,
-    output logic [ 7:0] tx_counter,
+    output logic [DATA_WIDTH-1:0] tx_counter,
     output logic        tx_counter_upd,
     output logic [DATA_WIDTH-1:0] tx_data,
     output logic        tx_data_valid,
